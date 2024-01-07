@@ -1,0 +1,67 @@
+{
+    "tabnine.experimentalAutoImports": true,
+    "workbench.colorTheme": "Electron",
+    "workbench.iconTheme": "twemoji-icon-theme",
+    "editor.fontFamily": "'Cascadia Code PL', 'Cascadia Mono PL', monospace",
+    "editor.lineHeight": 2.3,
+    "java.inlayHints.parameterNames.enabled": "none",
+    "better-comments.tags": [
+        {
+            "tag": "(#)",
+            "color": "#fff164",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": true,
+            "italic": false
+        },
+        {
+            "tag": "(f)",
+            "color": "#59ff78",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": false
+        },
+        {
+            "tag": "(i)",
+            "color": "#4d64e3",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": false,
+            "italic": true
+        },
+        {
+            "tag": "(AN)",
+            "color": "#ef00fc",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": true,
+            "italic": true
+        },
+        {
+            "tag": "//",
+            "color": "#99ff00",
+            "strikethrough": false,
+            "underline": true,
+            "backgroundColor": "transparent",
+            "bold": true,
+            "italic": true
+        },
+        {
+            "tag": "(!)",
+            "color": "#ff4a4a",
+            "strikethrough": false,
+            "underline": false,
+            "backgroundColor": "transparent",
+            "bold": true,
+            "italic": true
+        }
+    ],
+    "window.titleBarStyle": "custom",
+    "vscode_vibrancy.opacity": 0,
+    "vscode_vibrancy.theme": "GitHub Dark Default"
+}
