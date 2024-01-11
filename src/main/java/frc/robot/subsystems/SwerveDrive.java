@@ -44,6 +44,14 @@ public class SwerveDrive extends SubsystemBase {
         gyroscope.reset(); 
     }
 
+    public void resetModuleEncoders() {
+        leftFront.resetEncoders();
+        leftBack.resetEncoders();
+
+        rightFront.resetEncoders();
+        rightBack.resetEncoders();
+    }
+
     ////FEEDBACK FUNCTIONS
 
     //(f) -> Returns IEEERemainder value from gyroscope angle and value
@@ -121,14 +129,5 @@ public class SwerveDrive extends SubsystemBase {
 
         rightFront.setModuleState(driveState[1]);
         rightBack.setModuleState(driveState[3]);
-    }
-
-    //(f) -> Zeroes pivot encoders on the Swerve Modules
-    public void zeroModulePivotPositions() {
-        leftFront.zeroPivotEncoderToAbs();
-        leftBack.zeroPivotEncoderToAbs();
-
-        rightFront.zeroPivotEncoderToAbs();
-        rightBack.zeroPivotEncoderToAbs();
     }
 }

@@ -1,6 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj.event.EventLoop;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.TeleOPConstants;
 import frc.robot.commands.SwerveDriveController;
@@ -29,7 +31,12 @@ public class CommandCenter {
   }
 
   private void configureBindings() {
-
+    ////CONFIGURING BUTTON BINDINGS
+    //(f) -> Binds x (whenPressed) to resetting swerve module positions
+    controller.x(new EventLoop()).onTrue(new InstantCommand(() -> swerveDrive.resetModuleEncoders()));
+    
+    //(f) -> Binds start (whenPressed) to resetting swerve drive heading
+    controller.start(new EventLoop()).onTrue(new InstantCommand(() -> swerveDrive.zeroHeading()));
   }
 
   public Command getAutonomousCommand() {

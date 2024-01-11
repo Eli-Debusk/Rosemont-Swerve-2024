@@ -42,13 +42,6 @@ public class Dashboard {
         //(f) -> Updates Smartdashboard with Motor Safety information
         double[] tempuratures = swerveDrive.reportMotorTemps();
 
-        DashboardUtils.report("MTEMP : LF Drive", tempuratures[0]);
-        DashboardUtils.report("MTEMP : LF Pivot", tempuratures[1]);
-        DashboardUtils.report("MTEMP : LB Drive", tempuratures[2]);
-        DashboardUtils.report("MTEMP : LB Pivot", tempuratures[3]);
-        DashboardUtils.report("MTEMP : RF Drive", tempuratures[4]);
-        DashboardUtils.report("MTEMP : RF Pivot", tempuratures[5]);
-        DashboardUtils.report("MTEMP : RB Drive", tempuratures[6]);
-        DashboardUtils.report("MTEMP : RB Pivot", tempuratures[7]);
+        DashboardUtils.report("MTEMPS", tempuratures);
     }
 }

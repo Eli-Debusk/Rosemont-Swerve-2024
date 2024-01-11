@@ -20,7 +20,6 @@ public class SwerveDriveController extends Command {
   private final SwerveDrive swerveDriveSystem;
 
   private final Supplier<Double> speedXSupplier, speedYSupplier, speedRSupplier, speedMSupplier;
-  private final Supplier<Boolean> resetPivotSupplier;
 
   private final SlewRateLimiter translationRateLimiter, angularRateLimiter;
 
@@ -40,7 +39,6 @@ public class SwerveDriveController extends Command {
     this.speedYSupplier = () -> -controller.getLeftY();
     this.speedRSupplier = () -> controller.getRightX();
     this.speedMSupplier = () -> controller.getRightTriggerAxis();
-    this.resetPivotSupplier = () -> controller.x().getAsBoolean();
 
     this.translationRateLimiter = new SlewRateLimiter(SwerveConstants.kMaxPhysicalAccelerationTeleOP);
     this.angularRateLimiter = new SlewRateLimiter(SwerveConstants.kMaxAngularAccelerationTeleOP);
@@ -98,11 +96,6 @@ public class SwerveDriveController extends Command {
 
     //(i) Updating the desired swerve drive state
     swerveDriveSystem.setDriveState(swerveStates);
-
-    //(f) -> Using the boolean supplier to conditionally reset the module pivot zero position
-    if(resetPivotSupplier.get()) {
-      swerveDriveSystem.zeroModulePivotPositions();
-    } else {}
   }
 
   //(f) -> Runs once when the command is ended
