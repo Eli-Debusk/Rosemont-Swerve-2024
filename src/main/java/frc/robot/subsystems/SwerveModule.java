@@ -1,8 +1,8 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.sensors.CANCoder;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkBase.IdleMode;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -20,7 +20,7 @@ public class SwerveModule {
     private final NEOBrushlessMotor driveNEO, pivotNEO;
 
     private final RelativeEncoder driveEncoder, pivotEncoder;
-    private final CANCoder absoluteEncoder;
+    private final CANcoder absoluteEncoder;
 
     ////CLASS INITIALIZATIONS
 
@@ -33,7 +33,7 @@ public class SwerveModule {
 
         driveEncoder = driveNEO.getEncoder(); //Uses the NEO's built-in encoder
         pivotEncoder = pivotNEO.getEncoder(); //Uses the NEO's built-in encoder
-        absoluteEncoder = new CANCoder(profile.absEncoderCID);
+        absoluteEncoder = new CANcoder(profile.absEncoderCID);
 
         ////DEVICE CONFIGURATION
 
@@ -78,7 +78,7 @@ public class SwerveModule {
 
     //(f) -> Returns the current position of the absolute encoder
     public double getAbsolutePosition() { 
-        return absoluteEncoder.getAbsolutePosition();
+        return absoluteEncoder.getAbsolutePosition().getValueAsDouble();
     }
 
     //(f) -> Returns SwerveModulePosition
@@ -93,7 +93,7 @@ public class SwerveModule {
             driveEncoder.getVelocity(), 
             pivotEncoder.getPosition(), 
             pivotEncoder.getVelocity(), 
-            absoluteEncoder.getAbsolutePosition()
+            absoluteEncoder.getAbsolutePosition().getValueAsDouble()
         };
     }
 

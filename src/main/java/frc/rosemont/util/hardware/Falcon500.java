@@ -1,7 +1,6 @@
 package frc.rosemont.util.hardware;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.can.TalonFX;
+import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.controller.PIDController;
 
@@ -19,6 +18,6 @@ public class Falcon500 extends TalonFX {
     }
 
     public void runToPosition(double position) {
-        this.set(ControlMode.PercentOutput, _controller.calculate(getSelectedSensorPosition(), position));
+        this.set(_controller.calculate(getPosition().getValueAsDouble(), position));
     }
 }
