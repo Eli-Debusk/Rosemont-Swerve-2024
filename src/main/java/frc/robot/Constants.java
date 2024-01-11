@@ -52,7 +52,7 @@ public final class Constants {
     ////CONVERSION CONSTANTS
 
     //(f) -> Position conversions
-    public static final double DriveRotationToMeter = kDriveGearRatio * Math.PI * kWheelCircumference;
+    public static final double DriveRotationToMeter = kDriveGearRatio * Math.PI * Units.inchesToMeters(1.5);
     public static final double PivotRotationToRadians = kPivotGearRatio * 2 * Math.PI;
 
     //(f) -> Velocity conversions
@@ -66,13 +66,15 @@ public final class Constants {
 
     //(f) -> Speed Limits for Safety
     public static final double kMaxPhysicalSpeed = 12.5; //Found at SwerveDriveSpecialties MK4I Description
-    public static final double kMaxAngularSpeed = 3 * Math.PI; //2π Radians per second (1 Rotation per second)
+    public static final double kMaxAngularSpeed = 4 * Math.PI; //2π Radians per second (1 Rotation per second)
 
-    public static final double kNormalPhysicalSpeedTeleOP = 6;
-    public static final double kFastPhysicalSpeedTeleOP = 10;
+    public static final double kSlowPhysicalSpeedTeleOP = 5;
+    public static final double kNormalPhysicalSpeedTeleOP = 7.5;
+    public static final double kFastPhysicalSpeedTeleOP = 12;
 
-    public static final double kNormalAngularSpeedTeleOP = 2 * Math.PI;
-    public static final double kFastAngularSpeedTeleOP = 2.5 * Math.PI;
+    public static final double kSlowAngularSpeedTeleOP = 2;
+    public static final double kNormalAngularSpeedTeleOP = 3 * Math.PI;
+    public static final double kFastAngularSpeedTeleOP = 4 * Math.PI;
 
     public static final double kNormalPhysicalSpeedAuto = 5;
 

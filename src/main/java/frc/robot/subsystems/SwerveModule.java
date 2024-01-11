@@ -129,7 +129,7 @@ public class SwerveModule {
         driveNEO.set(RoboMath.clip(moduleState.speedMetersPerSecond / SwerveConstants.kMaxPhysicalSpeed, -1, 1));
 
         //(f) -> Sets the PID Output of the pivot motor to the desired state
-        pivotNEO.runToPosition(moduleState.angle.getRadians());
+        pivotNEO.runToPosition(moduleState.angle.getRadians(), getPivotPosition());
     }
 
     //(f) -> Uses the relative encoder to zero the wheel angle 

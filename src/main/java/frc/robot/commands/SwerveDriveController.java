@@ -21,7 +21,7 @@ public class SwerveDriveController extends Command {
 
   private final Supplier<Double> speedXSupplier, speedYSupplier, speedRSupplier, speedMSupplier;
 
-  private final SlewRateLimiter translationRateLimiter, angularRateLimiter;
+  private final SlewRateLimiter xRateLimiter, yRateLimiter, angularRateLimiter;
 
   private final DualFactorSpeedController translationDualSpeedController, angularDualSpeedController;
 
@@ -40,7 +40,8 @@ public class SwerveDriveController extends Command {
     this.speedRSupplier = () -> controller.getRightX();
     this.speedMSupplier = () -> controller.getRightTriggerAxis();
 
-    this.translationRateLimiter = new SlewRateLimiter(SwerveConstants.kMaxPhysicalAccelerationTeleOP);
+    this.xRateLimiter = new SlewRateLimiter(SwerveConstants.kMaxPhysicalAccelerationTeleOP);
+    this.yRateLimiter = new SlewRateLimiter(SwerveConstants.kMaxPhysicalAccelerationTeleOP);
     this.angularRateLimiter = new SlewRateLimiter(SwerveConstants.kMaxAngularAccelerationTeleOP);
 
     this.translationDualSpeedController = new DualFactorSpeedController(
@@ -79,8 +80,8 @@ public class SwerveDriveController extends Command {
     rSpeed = RoboMath.applyDeadband(rSpeed, TeleOPConstants.kSpeedDeadband);
 
     //(f) -> Applies the Rate Limiters and the Dual Factor Speed Controllers to get a final velocity output
-    xSpeed = translationRateLimiter.calculate(xSpeed) * translationDualSpeedController.calculate(speedMSupplier.get());
-    ySpeed = translationRateLimiter.calculate(ySpeed) * translationDualSpeedController.calculate(speedMSupplier.get());
+    xSpeed = xRateLimiter.calculate(xSpeed) * translationDualSpeedController.calculate(speedMSupplier.get());
+    ySpeed = yRateLimiter.calculate(ySpeed) * translationDualSpeedController.calculate(speedMSupplier.get());
     rSpeed = angularRateLimiter.calculate(rSpeed) * angularDualSpeedController.calculate(speedMSupplier.get());
 
     //(i) Constructing new ChassisSpeeds object
@@ -88,7 +89,7 @@ public class SwerveDriveController extends Command {
 
     //(f) -> Definining the ChassisSpeeds object using velocity variables and the robot Rotation2D
     chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(
-      xSpeed, ySpeed, rSpeed, swerveDriveSystem.getRotation2D()
+      ySpeed, xSpeed, rSpeed, swerveDriveSystem.getRotation2D()
     );
 
     //(f) -> Converts the ChassisSpeeds into an array of SwerveModuleStates

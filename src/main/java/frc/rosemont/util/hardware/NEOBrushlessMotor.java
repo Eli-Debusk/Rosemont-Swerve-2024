@@ -22,6 +22,10 @@ public class NEOBrushlessMotor extends CANSparkMax {
     }
 
     public void runToPosition(double position) {
-        this.set(_controller.calculate(position, getEncoder().getPosition()));
+        this.set(_controller.calculate(getEncoder().getPosition(), position));
+    }
+
+    public void runToPosition(double position, double value) {
+        this.set(_controller.calculate(value, position));
     }
 }

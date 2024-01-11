@@ -5,8 +5,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.TeleOPConstants;
-import frc.robot.commands.SwerveDriveController;
+import frc.robot.commands.SwerveDriveControllerExp;
 import frc.robot.subsystems.SwerveDrive;
+import frc.rosemont.util.controllers.SuppliedController;
 
 //(#) The Robot Command Center to schedule commands and operate the robot
 public class CommandCenter {
@@ -17,15 +18,15 @@ public class CommandCenter {
 
   public CommandCenter() {
 
-    swerveDrive.setDefaultCommand(new SwerveDriveController(
-      swerveDrive, 
-      controller
-    ));
-
-    // swerveDrive.setDefaultCommand(new SwerveDriveControllerExp(
-    //   swerveDrive,
-    //   new SuppliedController(controller, true)
+    // swerveDrive.setDefaultCommand(new SwerveDriveController(
+    //   swerveDrive, 
+    //   controller
     // ));
+
+    swerveDrive.setDefaultCommand(new SwerveDriveControllerExp(
+      swerveDrive,
+      new SuppliedController(controller, true)
+    ));
 
     configureBindings();
   }
