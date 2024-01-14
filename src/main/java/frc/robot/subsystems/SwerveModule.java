@@ -90,6 +90,11 @@ public class SwerveModule {
         return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getPivotPosition()));
     }
 
+    //(s) Diagnostic Feedback
+    public double[] getTempuratures() {
+        return new double[] {driveNEO.getMotorTemperature(), pivotNEO.getMotorTemperature()};
+    }
+
     ////MOVEMENT FUNCTIONS
 
     public void setDesiredModuleState(SwerveModuleState moduleState) { 

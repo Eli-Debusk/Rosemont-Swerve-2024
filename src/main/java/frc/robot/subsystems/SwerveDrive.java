@@ -13,19 +13,20 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SwerveConstants;
+import frc.robot.software_commands.dashboard.ReportSwerveDriveTempurature;
 import frc.rosemont.util.RoboMath;
 import frc.rosemont.util.RosemontConstants.SwerveModulePositions;
 import frc.rosemont.util.profiles.DefaultSwerveModuleProfile;
 
 public class SwerveDrive extends SubsystemBase {
 
-    ////DEVICE CONSTRUCTION
+    ////VARIABLE CONSTRUCTION
 
     //(i) Swerve Modules (given a SwerveModuleProfile)
-    private final SwerveModule leftBack = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.LEFTBACK));
-    private final SwerveModule leftFront = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.LEFTFRONT));
-    private final SwerveModule rightBack = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.RIGHTBACK));
-    private final SwerveModule rightFront = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.RIGHTFRONT));
+    public final SwerveModule leftBack = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.LEFTBACK));
+    public final SwerveModule leftFront = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.LEFTFRONT));
+    public final SwerveModule rightBack = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.RIGHTBACK));
+    public final SwerveModule rightFront = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.RIGHTFRONT));
 
     //(i) KuaiLabs NavX Gyroscope
     private final AHRS gyroscope = new AHRS(Port.kMXP);
@@ -34,6 +35,9 @@ public class SwerveDrive extends SubsystemBase {
     private final Field2d fieldData = new Field2d();
     private final SwerveDriveOdometry odometryData = new SwerveDriveOdometry(
         SwerveConstants.swerveKinematics, getRotation2D(), getModulePositions());
+
+    //(i) Tempurature Reporting
+    private ReportSwerveDriveTempurature tempuratureReporter = new ReportSwerveDriveTempurature(this);
     
     ////CLASS STRUCTURE
     
@@ -54,6 +58,9 @@ public class SwerveDrive extends SubsystemBase {
     public void periodic() {
         odometryData.update(getRotation2D(), getModulePositions()); //(i) Updates odometry with new pose construction data
         fieldData.setRobotPose(odometryData.getPoseMeters()); //(i) Updates field data with odometry pose
+
+        //(s) Tempurature Data -> NetworkTables
+        tempuratureReporter.sendData();
     }
 
     ////FEEDBACK FUNCTIONS

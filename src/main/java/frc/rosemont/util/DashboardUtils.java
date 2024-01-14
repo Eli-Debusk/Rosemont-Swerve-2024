@@ -27,4 +27,14 @@ public class DashboardUtils {
     public static void report(String key, Sendable value) {
         SmartDashboard.putData(key, value);
     }
+
+    public static void reportTempuratureData(String key, double tempurature, double warningThreshold) {
+        
+        if (tempurature < warningThreshold) {
+            SmartDashboard.putBoolean(key, false);
+        } else {
+            SmartDashboard.putBoolean(key, true);
+        }
+
+    }
 }

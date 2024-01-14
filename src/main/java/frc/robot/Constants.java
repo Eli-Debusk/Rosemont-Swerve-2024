@@ -81,6 +81,8 @@ public final class Constants {
     public static final double kMaxPhysicalAccelerationTeleOP = 3;
     public static final double kMaxAngularAccelerationTeleOP = 3;
 
+    public static final double kTempuratureWarningThreshold = 75;
+
     //(i) Physical Kinematics
     public static final double kTrackWidth = 0.7493;
     public static final double kTrackLength = 0.7493;
