@@ -3,21 +3,25 @@ package frc.robot.subsystems;
 import com.kauailabs.navx.frc.AHRS;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI.Port;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.SwerveConstants;
 import frc.rosemont.util.RoboMath;
 import frc.rosemont.util.RosemontConstants.SwerveModulePositions;
 import frc.rosemont.util.profiles.DefaultSwerveModuleProfile;
 
-//(#) Full Swerve Drive Class (using four SDS MK4I Swerve Modules)
 public class SwerveDrive extends SubsystemBase {
 
-    ////DEVICE INITIALIZATION
+    ////DEVICE CONSTRUCTION
 
+    //(i) Swerve Modules (given a SwerveModuleProfile)
     private final SwerveModule leftBack = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.LEFTBACK));
     private final SwerveModule leftFront = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.LEFTFRONT));
     private final SwerveModule rightBack = new SwerveModule(new DefaultSwerveModuleProfile(SwerveModulePositions.RIGHTBACK));
@@ -25,109 +29,99 @@ public class SwerveDrive extends SubsystemBase {
 
     //(i) KuaiLabs NavX Gyroscope
     private final AHRS gyroscope = new AHRS(Port.kMXP);
+
+    //(i) FieldData and OdometryData
+    private final Field2d fieldData = new Field2d();
+    private final SwerveDriveOdometry odometryData = new SwerveDriveOdometry(
+        SwerveConstants.swerveKinematics, getRotation2D(), getModulePositions());
     
-    ////CLASS INITIALIZATION
+    ////CLASS STRUCTURE
     
     public SwerveDrive() {
         new Thread(() -> {
             try {
                 Thread.sleep(1000);
-                zeroHeading(); //(f) Resets gyroscope angle
+
+                resetHeading(); //(f) Resets gyroscope angle
+                SmartDashboard.putData("Field Data", fieldData); //(f) Sends field data to NetworkTables
+
             } catch (Exception e) {}
         })
         .start();
     }
 
-    ////UTIL FUNCTIONS
-
-    public void zeroHeading() {
-        gyroscope.reset(); 
-    }
-
-    public void resetModuleEncoders() {
-        leftFront.resetEncoders();
-        leftBack.resetEncoders();
-
-        rightFront.resetEncoders();
-        rightBack.resetEncoders();
+    @Override
+    public void periodic() {
+        odometryData.update(getRotation2D(), getModulePositions()); //(i) Updates odometry with new pose construction data
+        fieldData.setRobotPose(odometryData.getPoseMeters()); //(i) Updates field data with odometry pose
     }
 
     ////FEEDBACK FUNCTIONS
 
-    //(f) -> Returns IEEERemainder value from gyroscope angle and value
+    //(s) Navigation Feedback
+
     public double getHeading() {
-        return RoboMath.headingRemainder(gyroscope.getAngle());
+        return RoboMath.headingRemainder(gyroscope.getAngle()); //(i) Returns robot heading
     }
 
-    //(f) -> Retrieves robot Rotation2D value
     public Rotation2d getRotation2D() {
-        return Rotation2d.fromDegrees(getHeading());
+        return Rotation2d.fromDegrees(getHeading()); //(i) Returns robot heading in Rotation2d format
     }
 
-    //(f) -> Returns an Array of absolute encoder values
-    public double[] getAbsoluteModulePositions() {
-        return new double[] {
-            leftFront.getAbsolutePosition(),
-            leftBack.getAbsolutePosition(),
-            rightFront.getAbsolutePosition(),
-            rightBack.getAbsolutePosition()
-        };
-    }
-
-    //(f) -> Returns an Array of relative encoder values
-    public double[] getRelativeModulePositions() {
-        return new double[] {
-            leftFront.getPivotPosition(),
-            leftBack.getPivotPosition(),
-            rightFront.getPivotPosition(),
-            rightBack.getPivotPosition()
-        };
-    }
-
-    //(f) -> Returns Module SwerveModulePositions as an array
-    public SwerveModulePosition[] getSwerveModulePositions() {
+    public SwerveModulePosition[] getModulePositions() {
+       //(i) Constructs SwerveModulePosition array with all four module positions
         return new SwerveModulePosition[] {
-                leftFront.getModulePosition(),
-                rightFront.getModulePosition(),
-                leftBack.getModulePosition(),
-                rightBack.getModulePosition()                
-        };
-    }
-
-    //(f) -> Returns Module motor tempuratures as an array
-    public double[] reportMotorTemps() {
-        return new double[] {
-            leftBack.reportMotorTempuratures()[0],
-            leftBack.reportMotorTempuratures()[1],
-            leftFront.reportMotorTempuratures()[0],
-            leftFront.reportMotorTempuratures()[1],
-            rightBack.reportMotorTempuratures()[0],
-            rightBack.reportMotorTempuratures()[1],
-            rightFront.reportMotorTempuratures()[0],
-            rightFront.reportMotorTempuratures()[1],
+            leftFront.getModulePosition(),
+            rightFront.getModulePosition(),
+            leftBack.getModulePosition(),
+            rightBack.getModulePosition()
         };
     }
 
     ////MOVEMENT FUNCTIONS
     
-    //(f) -> Stops motors
+    //(f) Stops motors for Safety and Utility reasons
     public void stopModules() {
-        leftFront.stopMotors();
-        leftBack.stopMotors();
-        rightFront.stopMotors();
-        rightBack.stopMotors();
+        leftFront.stop();
+        leftBack.stop();
+        rightFront.stop();
+        rightBack.stop();
     }
 
-    //(f) -> Sets desired states of all modules in the Swerve Drive
-    public void setDriveState(SwerveModuleState[] driveState) {
-        SwerveDriveKinematics.desaturateWheelSpeeds(driveState, SwerveConstants.kMaxPhysicalSpeed); //Normailizing motor speeds
-        //(i) Swerve Module States are in the format of an array with front 
-        //(i) modules at [0,1] and back modules at [2,3], [left, right] respectively
+    //(f) Sets desired states of all modules in the Swerve Drive
+    public void setDesiredChassisSpeeds(ChassisSpeeds desiredChassisSpeeds) {
+        SwerveModuleState[] desiredDriveState = SwerveConstants.swerveKinematics.toSwerveModuleStates(desiredChassisSpeeds);
 
-        leftFront.setModuleState(driveState[0]);
-        leftBack.setModuleState(driveState[2]);
+        SwerveDriveKinematics.desaturateWheelSpeeds(desiredDriveState, SwerveConstants.kMaxPhysicalSpeed);
 
-        rightFront.setModuleState(driveState[1]);
-        rightBack.setModuleState(driveState[3]);
+        leftFront.setDesiredModuleState(desiredDriveState[0]);
+        leftBack.setDesiredModuleState(desiredDriveState[2]);
+
+        rightFront.setDesiredModuleState(desiredDriveState[1]);
+        rightBack.setDesiredModuleState(desiredDriveState[3]);
+    }
+
+    ////UTIL FUNCTIONS
+
+    public void resetHeading() {
+        gyroscope.reset(); //(i) Resets gyroscope yaw
+    }
+
+    //(f) Currently Unused
+    public void resetModules() {
+        leftFront.resetEncoderPositions();
+        leftBack.resetEncoderPositions();
+
+        rightFront.resetEncoderPositions();
+        rightBack.resetEncoderPositions();
+    }
+
+    //(f) Autosets pivot positions to ensure autozeroing
+    public void autoZeroModulePositions() {
+        leftFront.autoZeroPivotEncoder();
+        rightBack.autoZeroPivotEncoder();
+
+        leftBack.autoZeroPivotEncoder();
+        rightBack.autoZeroPivotEncoder();
     }
 }

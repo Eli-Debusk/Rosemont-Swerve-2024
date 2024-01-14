@@ -15,7 +15,7 @@ import frc.rosemont.util.profiles.DefaultSwerveModuleProfile;
 //(#) Swerve Module Class, (using NEO Brushless Motors, and CTRE-CANCoder Absolute Encoder)
 public class SwerveModule {
     
-    ////DEVICE INITIALIZATION
+    ////DEVICE CONSTRUCTION
 
     private final NEOBrushlessMotor driveNEO, pivotNEO;
 
@@ -31,129 +31,104 @@ public class SwerveModule {
         driveNEO = new NEOBrushlessMotor(profile.driveCID);
         pivotNEO = new NEOBrushlessMotor(profile.pivotCID);
 
-        driveEncoder = driveNEO.getEncoder(); //Uses the NEO's built-in encoder
-        pivotEncoder = pivotNEO.getEncoder(); //Uses the NEO's built-in encoder
+        driveEncoder = driveNEO.getEncoder(); //(i) Uses the NEO's built-in encoder
+        pivotEncoder = pivotNEO.getEncoder(); //(i) Uses the NEO's built-in encoder
         absoluteEncoder = new CANcoder(profile.absEncoderCID);
 
         ////DEVICE CONFIGURATION
 
-        driveNEO.setInverted(profile.driveReversed); //(i) Config direction of the drive motor
-        pivotNEO.setInverted(profile.pivotReversed); //(i) Config direction of the pivot motor
+        //(s) Motor Configuration
+        driveNEO.setInverted(profile.driveReversed); //(f) Config direction of the drive motor
+        pivotNEO.setInverted(profile.pivotReversed); //(f) Config direction of the pivot motor
 
-        driveNEO.setIdleMode(IdleMode.kBrake); //(i) Config the brake|coast mode of the drive motor
+        driveNEO.setIdleMode(IdleMode.kBrake); //(f) Config the brake|coast mode of the drive motor
 
-        //(f) -> Configuring conversion factors for encoder readings
+        //(s) Encoder Configuration
         driveEncoder.setPositionConversionFactor(SwerveConstants.DriveRotationToMeter);
         driveEncoder.setVelocityConversionFactor(SwerveConstants.DriveRPMToMPS);
 
         pivotEncoder.setPositionConversionFactor(SwerveConstants.PivotRotationToRadians);
         pivotEncoder.setVelocityConversionFactor(SwerveConstants.PivotRPMToRPS);
 
-        //(i) Configuring PID Controller for the pivot motor
+        //(s) Motion Configuration
         pivotNEO.configPIDController(SwerveConstants.kPivotProportional, 0, 0);
         pivotNEO.configPIDControllerCI(-Math.PI, Math.PI);
     } 
 
     ////FEEDBACK FUNCTIONS
 
-    //(f) -> Returns the current position of the drive encoder
-    public double getDrivePosition() { 
-        return driveEncoder.getPosition();
-    }
-
-    //(f) -> Returns the current velocity of the drive encoder
-    public double getDriveVelocity() { 
-        return driveEncoder.getVelocity();
-    }
-
-    //(f) -> Returns the current position of the pivot encoder
-    public double getPivotPosition() { 
-        return pivotEncoder.getPosition();  
-    }
-
-    //(f) -> Returns the current velocity of the pivot encoder
+    //(s) Velocity Feedback
     public double getPivotVelocity() { 
-        return pivotEncoder.getVelocity();  
+        return pivotEncoder.getVelocity(); //(i) Returns value in meters per second
     }
 
-    //(f) -> Returns the current position of the absolute encoder
+    public double getDriveVelocity() { 
+        return driveEncoder.getVelocity(); //(i) Returns value in radians per second
+    }
+
+    //(s) Position Feedback
+    public double getDrivePosition() { 
+        return driveEncoder.getPosition(); //(i) Returns continious meters
+    }
+
+    public double getPivotPosition() { 
+        return pivotEncoder.getPosition(); //(i) Returns continious radians
+    }
+
     public double getAbsolutePosition() { 
-        return absoluteEncoder.getAbsolutePosition().getValueAsDouble();
+        return absoluteEncoder.getAbsolutePosition().getValueAsDouble(); //(i) Returns radians between -π and π
     }
 
-    //(f) -> Returns SwerveModulePosition
+    //(s) SwerveModule Feedback
     public SwerveModulePosition getModulePosition() {
+        //(i) Returns SwerveModulePosition with meters traveled and travel angle
         return new SwerveModulePosition(getDrivePosition(), new Rotation2d(getPivotPosition()));
     }
 
-    //(!) ONLY USE FOR TELEMETRY, NOT FOR CALCULATIONS
-    public double[] reportEncoderData() { //(f) -> Returns an array of encoder data that can be used for telemetry
-        return new double[] {
-            driveEncoder.getPosition(),
-            driveEncoder.getVelocity(), 
-            pivotEncoder.getPosition(), 
-            pivotEncoder.getVelocity(), 
-            absoluteEncoder.getAbsolutePosition().getValueAsDouble()
-        };
-    }
-
-    public double[] reportMotorTempuratures() {
-        return new double[] {
-            driveNEO.getMotorTemperature(),
-            pivotNEO.getMotorTemperature()
-        };
+    public SwerveModuleState getModuleState() {
+        //(i) Returns SwerveModuleState with meters per second and travel angle
+        return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getPivotPosition()));
     }
 
     ////MOVEMENT FUNCTIONS
 
-    //(f) -> Retrieves the current SwerveModuleState given the current motor information
-    public SwerveModuleState getModuleState() {
-        return new SwerveModuleState(getDriveVelocity(), new Rotation2d(getPivotPosition()));
-    }
+    public void setDesiredModuleState(SwerveModuleState moduleState) { 
 
-    //(f) -> Used to set the desired state of the module
-    public void setModuleState(SwerveModuleState moduleState) { 
+        //(s) Power calculations
 
-        //(f) -> Discards miniscule speed values
+        //(f) Discards miniscule power values
         if (Math.abs(moduleState.speedMetersPerSecond) < 0.001) {
             return;
         }
 
-        //(f) -> Runs an optimization algorithm to reduce travel distance of the pivot motor
+        //(f) Runs algorithm to minimize pivot distance
         moduleState = SwerveModuleState.optimize(moduleState, getModuleState().angle); 
 
-        /* 
-            (f) -> Gets the wanted velocity of the drive motor and divides it by the maximum speed 
-            (f) -> of the chassis to get the desired power output of the motor.
-        */
+        //(s) Motor Outputs
+
+        //(i) Sets the drive motor's power to a value corrosponding to the motor's max speed and desired speed
         driveNEO.set(RoboMath.clip(moduleState.speedMetersPerSecond / SwerveConstants.kMaxPhysicalSpeed, -1, 1));
-
-        //(f) -> Sets the PID Output of the pivot motor to the desired state
+        
+        //(i) Sets the pivot motor to run to a desired angle
         pivotNEO.runToPosition(moduleState.angle.getRadians(), getPivotPosition());
-    }
-
-    //(f) -> Uses the relative encoder to zero the wheel angle 
-    public void zeroModule() {
-        driveNEO.stopMotor();
-        pivotNEO.runToPosition(0);
     }
 
     ////UTIL FUNCTIONS
 
-    //(f) -> Resets the relative encoder's position to 0
-    public void resetEncoders() {
-        driveEncoder.setPosition(0);
+    //(f) Currently unused
+    public void resetEncoderPositions() {
+        driveEncoder.setPosition(0); 
         pivotEncoder.setPosition(0);
     }
 
-    //(f) -> Stops the drive and pivot motors
-    public void stopMotors() {
+    //(f) Safety and Utility feature to stop motors
+    public void stop() {
         driveNEO.stopMotor();
         pivotNEO.stopMotor();
     }
 
-    //(f) -> Sets the pivot's relEncoder position to the current absEncoder position
-    public void zeroPivotEncoderToAbs() {
-        pivotEncoder.setPosition(getAbsolutePosition());
+    //(f) Used to autozero when relative encoder resets
+    public void autoZeroPivotEncoder() {
+        pivotEncoder.setPosition(-getAbsolutePosition());
     }
 }

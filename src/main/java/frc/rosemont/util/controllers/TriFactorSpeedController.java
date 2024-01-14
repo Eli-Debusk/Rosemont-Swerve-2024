@@ -30,6 +30,6 @@ public class TriFactorSpeedController {
         double lowError = _baseSpeed - _lowSpeed;
         double highError = _highSpeed - _baseSpeed;
        
-        return (lowError * lowFactor) + (_baseSpeed) + (highError * highFactor);
+        return (_baseSpeed) - (lowError * lowFactor) + (highError * highFactor);
     }
 }

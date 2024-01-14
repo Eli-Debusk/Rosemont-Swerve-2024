@@ -6,24 +6,18 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.software_subsystems.Dashboard;
 
 public class Robot extends TimedRobot {
   public static CommandCenter robotCommandContainer;
 
-  public static Dashboard dashboard;
-
   @Override
   public void robotInit() {
     robotCommandContainer = new CommandCenter();
-    dashboard = new Dashboard(robotCommandContainer.swerveDrive);
-    dashboard.init();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    dashboard.periodic();
   }
 
   @Override
